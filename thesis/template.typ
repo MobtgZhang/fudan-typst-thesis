@@ -145,7 +145,17 @@
     ret.join()
   })
 }
-
+// 用于分页操作
+#let smartpagebreak = () => {
+  if double_covers {
+    skippedstate.update(true)
+    pagebreak(to: "odd", weak: true)
+    skippedstate.update(false)
+  } else {
+    pagebreak(weak: true)
+  }
+}
+//-----------------------------------------------------------------
 // 中文目录
 #let chineseoutline(title: "目录", depth: none, indent: false) = {
   heading(title, numbering: none, outlined: false)
@@ -227,8 +237,12 @@
   })
 }
 
-// 插图目录
-#let listoffigures(title: "插图", kind: image) = {
+// 插图、表格或代码目录
+#let listoffigures(title: "插  图", kind: image) = {
+  if not is_listofimage or not is_listofcode  or not is_listoftable {
+    return none
+  }
+  set text(font:font_type_dict.黑体)
   heading(title, numbering: none, outlined: false)
   locate(it => {
     let elements = query(figure.where(kind: kind).after(it), it)
@@ -268,7 +282,12 @@
       line
     }
   })
+  smartpagebreak()
 }
+
+
+
+
 
 // 代码块
 #let codeblock(raw, caption: none, outline: false) = {
@@ -345,22 +364,12 @@
     kind: table
   )
 }
-// 用于分页操作
-#let smartpagebreak = () => {
-  if double_covers {
-    skippedstate.update(true)
-    pagebreak(to: "odd", weak: true)
-    skippedstate.update(false)
-  } else {
-    pagebreak(weak: true)
-  }
-}
 
 // 定义目录
-#let tableofcontents(depth: none, indent: false) = {
+#let tableofcontents(title:"目   录",depth: none, indent: false) = {
   set align(center)
   set text(font:font_type_dict.黑体, size: font_size_dict.三号)
-  heading("目   录", numbering: none, outlined: false)
+  heading(title, numbering: none, outlined: false)
   locate(it => {
     let elements = query(heading.where(outlined: true).after(it), it)
 
@@ -459,6 +468,7 @@
   ]
   smartpagebreak()
 }
+
 // 显示中文摘要
 #let show_cn_abstract(loaded_filename) = {
   set align(center+top)
@@ -480,11 +490,6 @@
   ]
   smartpagebreak()
 }
-
-
-
-
-
 
 // 定义文章的主体部分
 #let fudan_thesis(
@@ -585,6 +590,9 @@
   show strong: it => text(stroke:auto_fake_blod,it.body)
   show emph: it => text(style: "italic", it.body)
   
+  // 设置列表格式
+  set list(indent: 2em)
+  set enum(indent: 2em)
 
   // 设置章节标题格式
   show heading: it => [
@@ -657,9 +665,57 @@
       }
     })
   )
-  // 设置列表格式
-  set list(indent: 2em)
-  set enum(indent: 2em)
+  // 设置ref指代方式的格式
+  show ref: it => {
+    if it.element == none {
+      // Keep citations as is
+      it
+    } else {
+      // Remove prefix spacing
+      h(0em, weak: true)
+
+      let el = it.element
+      let el_loc = el.location()
+      if el.func() == math.equation {
+        // Handle equations
+        link(el_loc, [
+          式
+          #chinesenumbering(chaptercounter.at(el_loc).first(), equationcounter.at(el_loc).first(), location: el_loc, brackets: true)
+        ])
+      } else if el.func() == figure {
+        // Handle figures
+        if el.kind == image {
+          link(el_loc, [
+            图
+            #chinesenumbering(chaptercounter.at(el_loc).first(), imagecounter.at(el_loc).first(), location: el_loc)
+          ])
+        } else if el.kind == table {
+          link(el_loc, [
+            表
+            #chinesenumbering(chaptercounter.at(el_loc).first(), tablecounter.at(el_loc).first(), location: el_loc)
+          ])
+        } else if el.kind == "code" {
+          link(el_loc, [
+            代码
+            #chinesenumbering(chaptercounter.at(el_loc).first(), rawcounter.at(el_loc).first(), location: el_loc)
+          ])
+        }
+      } else if el.func() == heading {
+        // Handle headings
+        if el.level == 1 {
+          link(el_loc, chinesenumbering(..counter(heading).at(el_loc), location: el_loc))
+        } else {
+          link(el_loc, [
+            节
+            #chinesenumbering(..counter(heading).at(el_loc), location: el_loc)
+          ])
+        }
+      }
+
+      // Remove suffix spacing
+      h(0em, weak: true)
+    }
+  }
 
   par(justify: true, first-line-indent: 2em, leading: linespacing)[
     #doc

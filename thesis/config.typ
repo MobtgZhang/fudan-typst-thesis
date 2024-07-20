@@ -18,4 +18,15 @@
 #let outlinedepth = 3 // 目录的深度
 // 中图分类号
 #let clc_number = "TP391.1"
-
+// 完成日期
+#let display_year = str(datetime.today().year())
+#let display_month = str(datetime.today().month())
+#let display_day = str(datetime.today().day())
+#let finish_day = display_year+"年"+display_month+"月"+display_day+"日"
+// 是否列举出某些目录
+// 列出图片
+#let is_listofimage = true
+// 列出表格
+#let is_listoftable = true
+// 列出代码
+#let is_listofcode = true

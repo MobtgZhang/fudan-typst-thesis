@@ -7,6 +7,12 @@
 #tableofcontents(
     depth: outlinedepth,
     indent: true)
+// 插图目录
+#listoffigures()
+// 表格目录
+#listoffigures(title: "表  格", kind: table)
+// 代码目录
+#listoffigures(title: "代  码", kind: "code")
 //#frontmatter()
 // 中文摘要
 #show_cn_abstract("chapters/cn-abstract.typ")
@@ -28,4 +34,3 @@
 //#backmatter()
 #include "chapters/thanks.typ"  // 致谢
 #include "covers/original.typ" // 作者原创声明等
-

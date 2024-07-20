@@ -1,3 +1,4 @@
+//论文第一页
 #import "../template.typ":font_size_dict,font_type_dict,chinesenumber,smartpagebreak
 #import "../config.typ":*
 // 定义一些工具函数
@@ -51,9 +52,7 @@
   #text(en_title,font:font_type_dict.宋体,size:font_size_dict.小三)
 ]
 #v(3em)
-#let display_year = str(datetime.today().year())
-#let display_month = str(datetime.today().month())
-#let display_day = str(datetime.today().day())
+
 #align(center)[
   #set text(font:font_type_dict.宋体,size:font_size_dict.四号)
   #grid(
@@ -68,13 +67,12 @@
       fieldname("指" + h(0.5em) + "导" + h(0.5em) + "教" + h(0.5em) + "师："),
       fieldvalue(cn_instructor+h(0.5em)+cn_instructor_type),
       fieldname("完" + h(0.5em) + "成" + h(0.5em) + "日" + h(0.5em) + "期："),
-      fieldvalue(display_year+"年"+display_month+"月"+display_day+"日"),
+      fieldvalue(finish_day),
     )
 ]
-
 #smartpagebreak()
 
-
+// 指导小组成员扉页
 #align(center + top)[
   #text("指"+h(1em)+"导"+h(1em)+"小"+h(1em)+"组"+h(1em)+"成"+h(1em)+"员", font: font_type_dict.黑体, size: font_size_dict.二号)
   
