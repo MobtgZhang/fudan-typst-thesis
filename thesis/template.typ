@@ -1,5 +1,6 @@
+#import "config.typ":*
 // 定义相关字体、字号信息等
-#let 字号 = (
+#let font_size_dict = (
   初号: 42pt,
   小初: 36pt,
   一号: 26pt,
@@ -19,15 +20,15 @@
   小七: 5pt,
 )
 
-#let 字体 = (
+#let font_type_dict = (
   仿宋: ("Times New Roman", "FangSong"),
-  宋体: ("Times New Roman", "SimSun"),
+  宋体: ("Times New Roman", "Simsun (Founder Extended)"),
   黑体: ("Times New Roman", "SimHei"),
   楷体: ("Times New Roman", "KaiTi"),
   代码: ("New Computer Modern Mono", "Times New Roman", "SimSun"),
 )
 
-#let lengthceil(len, unit: 字号.小四) = calc.ceil(len / unit) * unit
+#let lengthceil(len, unit: font_size_dict.小四) = calc.ceil(len / unit) * unit
 // 定义计数器
 #let partcounter = counter("part")  // 章
 #let chaptercounter = counter("chapter")  // 节
@@ -43,6 +44,9 @@
   chaptercounter.update(0)
   counter(heading).update(0)
 }
+//
+//
+#let skippedstate = state("skipped", false)
 //-------------------------------------------------------------
 // 定义一些工具函数
 // 定义中文数字
@@ -341,17 +345,198 @@
     kind: table
   )
 }
+// 用于分页操作
+#let smartpagebreak = () => {
+  if double_covers {
+    skippedstate.update(true)
+    pagebreak(to: "odd", weak: true)
+    skippedstate.update(false)
+  } else {
+    pagebreak(weak: true)
+  }
+}
+
+// 定义目录
+#let tableofcontents(depth: none, indent: false) = {
+  set align(center)
+  set text(font:font_type_dict.黑体, size: font_size_dict.三号)
+  heading("目   录", numbering: none, outlined: false)
+  locate(it => {
+    let elements = query(heading.where(outlined: true).after(it), it)
+
+    for el in elements {
+      // Skip list of images and list of tables
+      if partcounter.at(el.location()).first() < 20 and el.numbering == none { continue }
+
+      // Skip headings that are too deep
+      if depth != none and el.level > depth { continue }
+
+      let maybe_number = if el.numbering != none {
+        if el.numbering == chinesenumbering {
+          chinesenumbering(..counter(heading).at(el.location()), location: el.location())
+        } else {
+          numbering(el.numbering, ..counter(heading).at(el.location()))
+        }
+        h(0.5em)
+      }
+
+      let line = {
+        if indent {
+          h(1em * (el.level - 1 ))
+        }
+
+        if el.level == 1 {
+          v(0.5em, weak: true)
+        }
+
+        if maybe_number != none {
+          style(styles => {
+            let width = measure(maybe_number, styles).width
+            box(
+              width: lengthceil(width),
+              link(el.location(), if el.level == 1 {
+                strong(maybe_number)
+              } else {
+                maybe_number
+              })
+            )
+          })
+        }
+
+        link(el.location(), if el.level == 1 {
+          strong(el.body)
+        } else {
+          el.body
+        })
+
+        // Filler dots
+        if el.level == 1 {
+          box(width: 1fr, h(10pt) + box(width: 1fr) + h(10pt))
+        } else {
+          box(width: 1fr, h(10pt) + box(width: 1fr, repeat[.]) + h(10pt))
+        }
+
+        // Page number
+        let footer = query(selector(<__footer__>).after(el.location()), el.location())
+        let page_number = if footer == () {
+          0
+        } else {
+          counter(page).at(footer.first().location()).first()
+        }
+        
+        link(el.location(), if el.level == 1 {
+          strong(str(page_number))
+        } else {
+          str(page_number)
+        })
+
+        linebreak()
+        v(-0.2em)
+      }
+      line
+    }
+  })
+  smartpagebreak()
+}
 
 // 定义文章的主体部分
 #let fudan_thesis(
-    zh_author: "张三",
-    en_author: "San Zhang",
-    student_id: "23000xxxxx",
-    linespacing: 1em,
-    degree_type: "博士", // 类型分为专业博士
     doc,
 ) = {
+  set page("a4",
+    header: locate(loc => {
+      if skippedstate.at(loc) and calc.even(loc.page()) { return }
+      [
+        #set text(font_size_dict.五号)
+        #set align(center)
+        #if partcounter.at(loc).at(0) < 10 {
+          let headings = query(selector(heading).after(loc), loc)
+          let next_heading = if headings == () {
+            ()
+          } else {
+            headings.first().body.text
+          }
+
+          // [HARDCODED] Handle the first page of Chinese abstract specailly
+          if next_heading == "摘要" and calc.odd(loc.page()) {
+            [
+              #next_heading
+              #v(-1em)
+              #line(length: 100%)
+            ]
+          }
+        } else if partcounter.at(loc).at(0) <= 20 {
+          if calc.even(loc.page()) {
+            [
+              #align(center, cheader)
+              #v(-1em)
+              #line(length: 100%)
+            ]
+          } else {
+            let footers = query(selector(<__footer__>).after(loc), loc)
+            if footers != () {
+              let elems = query(
+                heading.where(level: 1).before(footers.first().location()), footers.first().location()
+              )
+
+              // [HARDCODED] Handle the last page of Chinese abstract specailly
+              let el = if elems.last().body.text == "摘要" or not skippedstate.at(footers.first().location()) {
+                elems.last()
+              } else {
+                elems.at(-2)
+              }
+              [
+                #let numbering = if el.numbering == chinesenumbering {
+                  chinesenumbering(..counter(heading).at(el.location()), location: el.location())
+                } else if el.numbering != none {
+                  numbering(el.numbering, ..counter(heading).at(el.location()))
+                }
+                #if numbering != none {
+                  numbering
+                  h(0.5em)
+                }
+                #el.body
+                #v(-1em)
+                #line(length: 100%)
+              ]
+            }
+          }
+      }]}),
+    footer: locate(loc => {
+      if skippedstate.at(loc) and calc.even(loc.page()) { return }
+      [
+        #set text(font_size_dict.五号)
+        #set align(center)
+        #if query(selector(heading).before(loc), loc).len() < 2 or query(selector(heading).after(loc), loc).len() == 0 {
+          // Skip cover, copyright and origin pages
+        } else {
+          let headers = query(selector(heading).before(loc), loc)
+          let part = partcounter.at(headers.last().location()).first()
+          [
+            #if part < 20 {
+              numbering("I", counter(page).at(loc).first())
+            } else {
+              str(counter(page).at(loc).first())
+            }
+          ]
+        }
+        #label("__footer__")
+      ]
+    }),
+  )
+  set text(font_size_dict.一号, font: font_type_dict.宋体, lang: "zh")
+  set align(center + horizon)
+  set heading(numbering: chinesenumbering)
+
+  //设置文章中主体样式
   set align(left + top)
+  // 设置文章字体
+  // 正文内容，字体：宋体、字号：小四号、字符间距：标准
+  set text(size: font_size_dict.小四, font: font_type_dict.宋体, lang: "zh")
+  // 设置字体加粗和斜体样式
+  show strong: it => text(stroke:auto_fake_blod,it.body)
+  show emph: it => text(style: "italic", it.body)
+  
   par(justify: true, first-line-indent: 2em, leading: linespacing)[
     #doc
   ]
