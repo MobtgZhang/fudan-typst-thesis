@@ -439,6 +439,53 @@
   smartpagebreak()
 }
 
+// 显示英文摘要
+#let show_en_abstract(loaded_filename) = {
+  set align(center+top)
+  text("Abstract", font: font_type_dict.黑体,size:font_size_dict.二号)
+  set align(left+top)
+  par(justify: true, first-line-indent: 2em, leading: linespacing)[
+      #include loaded_filename
+      #import loaded_filename: en_key_words
+      #linebreak()
+      #set align(bottom+left)
+      #set par(first-line-indent: 0em)
+      #text("Keywords: ", weight: "bold")
+      #en_key_words.join("; ")
+      
+      #text("CLC Code: ", stroke: auto_fake_blod)
+      #clc_number
+      #v(5em)
+  ]
+  smartpagebreak()
+}
+// 显示中文摘要
+#let show_cn_abstract(loaded_filename) = {
+  set align(center+top)
+  text("摘"+h(1em)+"要", font: font_type_dict.黑体,size:font_size_dict.二号)
+  set par(justify: true, first-line-indent: 2em, leading: linespacing)
+  set align(left+top)
+  par(justify: true, first-line-indent: 2em, leading: linespacing)[
+      #include loaded_filename
+      #import loaded_filename: cn_key_words
+      #linebreak()
+      #set align(bottom+left)
+      #set par(first-line-indent: 0em)
+      #text("关键字： ", stroke: auto_fake_blod)
+      #cn_key_words.join("； ")
+      
+      #text("中图分类号： ", stroke: auto_fake_blod)
+      #clc_number
+      #v(5em)
+  ]
+  smartpagebreak()
+}
+
+
+
+
+
+
 // 定义文章的主体部分
 #let fudan_thesis(
     doc,

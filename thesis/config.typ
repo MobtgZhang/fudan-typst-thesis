@@ -16,3 +16,6 @@
 #let secret_years = none // 如果非秘密项目，可以设置为none，秘密项目直接设置为XXX数字
 #let double_covers = false // 是否添加空页码，设置为打印时候的页码
 #let outlinedepth = 3 // 目录的深度
+// 中图分类号
+#let clc_number = "TP391.1"
+

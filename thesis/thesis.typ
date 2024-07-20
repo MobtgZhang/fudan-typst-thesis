@@ -9,9 +9,9 @@
     indent: true)
 //#frontmatter()
 // 中文摘要
-#include "chapters/cn-abstract.typ"
+#show_cn_abstract("chapters/cn-abstract.typ")
 // 英文摘要
-#include "chapters/en-abstract.typ"
+#show_en_abstract("chapters/en-abstract.typ")
 // 引言
 #include "chapters/preference.typ"
 // 符号说明
