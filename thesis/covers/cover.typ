@@ -1,4 +1,4 @@
-#import "../template.typ":font_size_dict,font_type_dict,chinesenumber
+#import "../template.typ":font_size_dict,font_type_dict,chinesenumber,smartpagebreak
 #import "../config.typ":*
 // 定义一些工具函数
 #let fieldname(name) = [
@@ -72,10 +72,7 @@
     )
 ]
 
-#pagebreak()
-#if double_covers {
-  pagebreak()
-}
+#smartpagebreak()
 
 
 #align(center + top)[
@@ -94,7 +91,4 @@
     )
   ]
 ]
-#pagebreak()
-#if double_covers {
-  pagebreak()
-}
+#smartpagebreak()

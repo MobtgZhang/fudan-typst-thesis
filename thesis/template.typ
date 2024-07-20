@@ -468,6 +468,7 @@
         } else if partcounter.at(loc).at(0) <= 20 {
           if calc.even(loc.page()) {
             [
+              #let cheader= "复旦大学"+degree_type+"学位论文"
               #align(center, cheader)
               #v(-1em)
               #line(length: 100%)
@@ -537,6 +538,82 @@
   show strong: it => text(stroke:auto_fake_blod,it.body)
   show emph: it => text(style: "italic", it.body)
   
+
+  // 设置章节标题格式
+  show heading: it => [
+    // Cancel indentation for headings
+    #set par(first-line-indent: 0em)
+
+    #let sizedheading(it, size) = [
+      #set text(size)
+      #v(2em)
+      #if it.numbering != none {
+        strong(counter(heading).display())
+        h(0.5em)
+      }
+      #strong(it.body)
+      #v(1em)
+    ]
+
+    #if it.level == 1 {
+      if not it.body.text in ("Abstract", "学位论文使用授权说明", "版权声明")  {
+        smartpagebreak()
+      }
+      locate(loc => {
+        if it.body.text == "摘要" {
+          partcounter.update(10)
+          counter(page).update(1)
+        } else if it.numbering != none and partcounter.at(loc).first() < 20 {
+          partcounter.update(20)
+          counter(page).update(1)
+        }
+      })
+      if it.numbering != none {
+        chaptercounter.step()
+      }
+      footnotecounter.update(())
+      imagecounter.update(())
+      tablecounter.update(())
+      rawcounter.update(())
+      equationcounter.update(())
+
+      set align(center)
+      sizedheading(it, font_size_dict.三号)
+    } else {
+      if it.level == 2 {
+        sizedheading(it, font_size_dict.四号)
+      } else if it.level == 3 {
+        sizedheading(it, font_size_dict.中四)
+      } else {
+        sizedheading(it, font_size_dict.小四)
+      }
+    }
+  ]
+  // 设置插入图片的格式
+  set figure(
+    numbering: (..nums) => locate(loc => {
+      if appendixcounter.at(loc).first() < 10 {
+        numbering("1.1", chaptercounter.at(loc).first(), ..nums)
+      } else {
+        numbering("A.1", chaptercounter.at(loc).first(), ..nums)
+      }
+    })
+  )
+  // 设置插入方程的格式
+  set math.equation(
+    numbering: (..nums) => locate(loc => {
+      set text(font: 字体.宋体)
+      if appendixcounter.at(loc).first() < 10 {
+        numbering("(1.1)", chaptercounter.at(loc).first(), ..nums)
+      } else {
+        numbering("(A.1)", chaptercounter.at(loc).first(), ..nums)
+      }
+    })
+  )
+  // 设置列表格式
+  set list(indent: 2em)
+  set enum(indent: 2em)
+
   par(justify: true, first-line-indent: 2em, leading: linespacing)[
     #doc
   ]
