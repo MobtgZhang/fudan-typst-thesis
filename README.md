@@ -46,6 +46,22 @@
 
 这个模板的学习成本仅仅类似于`Markdown`语法的模板，该模板为的就是简便，高效，从而构建自己漂亮的论文，相信比`Word`编写更好，比`LaTeX`更容易入门。
 
+### 无法找到宋体、黑体、楷体等文字字体文件
+对于MacOS系统来说，注意将对应的字体文件名称进行修改
+
++ `SimSun`修改为`STSongti-SC-Regular`
++ `SimHei`修改为`STHeiti-SC-Regular`
+
+对于Linux用户来说，缺少Windows字体文件，可以通过以下的方式将Windows字体文件库导入到Linux系统当中：
+```bash
+sudo mkdir -p /usr/share/fonts/winfonts # 共享文件夹下创建Windows字体库
+sudo cp Windows/Fonts/* /usr/share/fonts/winfonts/ # 将Windows字体复制到对应的文件夹下面，注意将标定的文件夹替换为Windows所在的目录
+sudo mkfontdir
+sudo mkfontscale  # 创建字体比率
+sudo fc-cache -fv  # 刷新字体库
+```
+
+
 ### 参与此小项目的方法
 
 可以提交PR，若没问题则将修改的代码合并起来。
