@@ -1,4 +1,13 @@
 # 复旦大学硕博士毕业设计论文Typst模板
+## 编译预览
+<table>
+  <tr>
+    <td><img src="imgs/page1.png"></td>
+    <td><img src="imgs/page2.png"></td>
+    <td><img src="imgs/page3.png"></td>
+  </tr>
+</table>
+
 ## 什么是Typst模板
 `Typst`是一个具有现代语法标记的排版系统和编程语言，被设计用于来创建美观、精确的文档。与传统文档排版系统，例如`LaTeX`，`ConTeXt`等并不相同，`Typst`采用了更加直观的语法，并且具有毫秒级别的编译速度，实现了所见即所得的排版系统，对于新手更加友好。
 
