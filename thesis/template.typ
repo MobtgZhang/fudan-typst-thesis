@@ -610,8 +610,8 @@
     // Cancel indentation for headings
     #set par(first-line-indent: 0em)
 
-    #let sizedheading(it, size) = [
-      #set text(size)
+    #let sizedheading(it, size,font) = [
+      #set text(size:size,font:font)
       #v(2em)
       #if it.numbering != none {
         strong(counter(heading).display())
@@ -644,14 +644,14 @@
       equationcounter.update(())
 
       set align(center)
-      sizedheading(it, font_size_dict.三号)
+      sizedheading(it, font_size_dict.三号,font_type_dict.黑体)
     } else {
       if it.level == 2 {
-        sizedheading(it, font_size_dict.四号)
+        sizedheading(it, font_size_dict.四号,font_type_dict.黑体)
       } else if it.level == 3 {
-        sizedheading(it, font_size_dict.中四)
+        sizedheading(it, font_size_dict.中四,font_type_dict.黑体)
       } else {
-        sizedheading(it, font_size_dict.小四)
+        sizedheading(it, font_size_dict.小四,font_type_dict.黑体)
       }
     }
   ]
