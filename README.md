@@ -31,7 +31,7 @@
     - [ ] 研究生开题报告
     - [ ] 博士研究计划书
 ## 使用方法
-1. 安装最新版本的[Typst]()软件;
+1. 安装最新版本的[Typst](https://typst.app/)软件;
 2. 下载并且解压到对应的文件目录当中；
 3. 修改并且将自己的文章写到`thesis.typ`文件中；
 4. 运行`typst compile thesis.typ --font-path fonts_path`
