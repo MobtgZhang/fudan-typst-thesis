@@ -572,14 +572,14 @@
       [
         #set text(font_size_dict.五号)
         #set align(center)
-        #if query(selector(heading).before(here())).len() < 2 or query(selector(heading).after(here())).len() == 0 {
+        #if query(selector(heading).before(here())).len() < 1 or query(selector(heading).after(here())).len() == 0 {
           // Skip cover, copyright and origin pages
         } else {
           let headers = query(selector(heading).before(here()))
           let part = partcounter.at(headers.last().location()).first()
           [
             #if part < 20 {
-              numbering("I", counter(page).at(here()).first())
+              numbering("i", counter(page).at(here()).first() - 2)
             } else {
               str(counter(page).at(here()).first())
             }
