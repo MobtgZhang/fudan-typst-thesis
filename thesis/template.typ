@@ -82,8 +82,9 @@
   }
 }
 // 定义中文计数，主要作用于章节的计数
-#let chinesenumbering(..nums, location: none, brackets: false) = locate(loc => {
-  let actual_loc = if location == none { loc } else { location }
+#let chinesenumbering(..nums, location: none, brackets: false) = {
+  let actual_loc = if location == none { here() } else { location }
+  
   if appendixcounter.at(actual_loc).first() < 10 {
     if nums.pos().len() == 1 {
       "第" + chinesenumber(nums.pos().first(), standalone: true) + "章"
@@ -97,7 +98,7 @@
       numbering(if brackets { "(A.1)" } else { "A.1" }, ..nums)
     }
   }
-})
+}
 
 // 中文下划线
 #let chineseunderline(s, width: 300pt, bold: false) = {
@@ -188,8 +189,8 @@
         }
 
         if maybe_number != none {
-          style(styles => {
-            let width = measure(maybe_number, styles).width
+          context {
+            let width = measure(maybe_number).width
             box(
               width: lengthceil(width),
               link(el.location(), if el.level == 1 {
@@ -198,7 +199,7 @@
                 maybe_number
               })
             )
-          })
+          }
         }
 
         link(el.location(), if el.level == 1 {
@@ -244,8 +245,8 @@
   }
   set text(font:font_type_dict.黑体)
   heading(title, numbering: none, outlined: false)
-  locate(it => {
-    let elements = query(figure.where(kind: kind).after(it), it)
+  context{
+    let elements = query(figure.where(kind: kind).after(here()))
 
     for el in elements {
       let maybe_number = {
@@ -281,7 +282,7 @@
 
       line
     }
-  })
+  }
   smartpagebreak()
 }
 
@@ -370,8 +371,8 @@
   set align(center)
   set text(font:font_type_dict.黑体, size: font_size_dict.三号)
   heading(title, numbering: none, outlined: false)
-  locate(it => {
-    let elements = query(heading.where(outlined: true).after(it), it)
+  context  {
+    let elements = query(heading.where(outlined: true).after(here()))
 
     for el in elements {
       // Skip list of images and list of tables
@@ -399,17 +400,17 @@
         }
 
         if maybe_number != none {
-          style(styles => {
-            let width = measure(maybe_number, styles).width
-            box(
-              width: lengthceil(width),
-              link(el.location(), if el.level == 1 {
-                strong(maybe_number)
-              } else {
-                maybe_number
-              })
-            )
-          })
+          context {
+              let width = measure(maybe_number).width
+              box(
+                width: lengthceil(width),
+                link(el.location(), if el.level == 1 {
+                  strong(maybe_number)
+                } else {
+                  maybe_number
+                })
+              )
+            }
         }
 
         link(el.location(), if el.level == 1 {
@@ -426,7 +427,7 @@
         }
 
         // Page number
-        let footer = query(selector(<__footer__>).after(el.location()), el.location())
+        let footer = query(selector(<__footer__>).after(el.location()))
         let page_number = if footer == () {
           0
         } else {
@@ -444,7 +445,7 @@
       }
       line
     }
-  })
+  }
   smartpagebreak()
 }
 
@@ -507,13 +508,13 @@
     doc,
 ) = {
   set page("a4",
-    header: locate(loc => {
-      if skippedstate.at(loc) and calc.even(loc.page()) { return }
+    header: context {
+      if skippedstate.at(here()) and calc.even(here().page()) { return }
       [
         #set text(font_size_dict.五号)
         #set align(center)
-        #if partcounter.at(loc).at(0) < 10 {
-          let headings = query(selector(heading).after(loc), loc)
+        #if partcounter.at(here()).at(0) < 10 {
+          let headings = query(selector(heading).after(here()))
           let next_heading = if headings == () {
             ()
           } else {
@@ -521,15 +522,15 @@
           }
 
           // [HARDCODED] Handle the first page of Chinese abstract specailly
-          if next_heading == "摘要" and calc.odd(loc.page()) {
+          if next_heading == "摘要" and calc.odd(here().page()) {
             [
               #next_heading
               #v(-1em)
               #line(length: 100%)
             ]
           }
-        } else if partcounter.at(loc).at(0) <= 20 {
-          if calc.even(loc.page()) {
+        } else if partcounter.at(here()).at(0) <= 20 {
+          if calc.even(here().page()) {
             [
               #let cheader= "复旦大学"+degree_type+"学位论文"
               #align(center, cheader)
@@ -537,10 +538,10 @@
               #line(length: 100%)
             ]
           } else {
-            let footers = query(selector(<__footer__>).after(loc), loc)
+            let footers = query(selector(<__footer__>).after(here()))
             if footers != () {
               let elems = query(
-                heading.where(level: 1).before(footers.first().location()), footers.first().location()
+                heading.where(level: 1).before(footers.first().location())
               )
 
               // [HARDCODED] Handle the last page of Chinese abstract specailly
@@ -565,28 +566,28 @@
               ]
             }
           }
-      }]}),
-    footer: locate(loc => {
-      if skippedstate.at(loc) and calc.even(loc.page()) { return }
+      }]},
+    footer: context {
+      if skippedstate.at(here()) and calc.even(here().page()) { return }
       [
         #set text(font_size_dict.五号)
         #set align(center)
-        #if query(selector(heading).before(loc), loc).len() < 2 or query(selector(heading).after(loc), loc).len() == 0 {
+        #if query(selector(heading).before(here())).len() < 1 or query(selector(heading).after(here())).len() == 0 {
           // Skip cover, copyright and origin pages
         } else {
-          let headers = query(selector(heading).before(loc), loc)
+          let headers = query(selector(heading).before(here()))
           let part = partcounter.at(headers.last().location()).first()
           [
             #if part < 20 {
-              numbering("I", counter(page).at(loc).first())
+              numbering("i", counter(page).at(here()).first() - 2)
             } else {
-              str(counter(page).at(loc).first())
+              str(counter(page).at(here()).first())
             }
           ]
         }
         #label("__footer__")
       ]
-    }),
+    },
   )
   set text(font_size_dict.一号, font: font_type_dict.宋体, lang: "zh")
   set align(center + horizon)
@@ -625,15 +626,15 @@
       if not it.body.text in ("Abstract", "学位论文使用授权说明", "版权声明")  {
         smartpagebreak()
       }
-      locate(loc => {
+      {
         if it.body.text == "摘要" {
           partcounter.update(10)
           counter(page).update(1)
-        } else if it.numbering != none and partcounter.at(loc).first() < 20 {
+        } else if it.numbering != none and partcounter.at(here()).first() < 20 {
           partcounter.update(20)
           counter(page).update(1)
         }
-      })
+      }
       if it.numbering != none {
         chaptercounter.step()
       }
